@@ -3,6 +3,13 @@
 # KoTE 성별 간 감정 설문 UX 최종 예시 (상태 초기화 + 신뢰도 평가 + Dropbox)
 # ============================================================
 
+# ============================================================
+# streamlit_app.py
+# KoTE 성별 간 감정 설문 UX 최종 완성 예시
+# - 결과 저장 후 session_state로 상태값 초기화
+# - 성별 선택과 메시지에 key 설정
+# ============================================================
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -42,12 +49,13 @@ if "analyzed" not in st.session_state:
 if "results" not in st.session_state:
     st.session_state["results"] = None
 
-# ✅ 성별 선택 (빈칸 시작)
+# ✅ 성별 선택 (빈칸 시작) - key 설정!
 gender = st.radio(
     "당신의 성별은?",
     ["여성", "남성"],
     index=None,
-    horizontal=True
+    horizontal=True,
+    key="gender"
 )
 
 # ✅ 대상 설명
@@ -57,8 +65,11 @@ if gender:
 else:
     target_group = None
 
-# ✅ 메시지 입력창
-text = st.text_area("솔직한 메시지:" if target_group else "먼저 성별을 선택해주세요!")
+# ✅ 메시지 입력창 - key 설정!
+text = st.text_area(
+    "솔직한 메시지:" if target_group else "먼저 성별을 선택해주세요!",
+    key="text"
+)
 
 # ✅ 감정 분석 버튼
 if st.button("감정 분석하기"):
@@ -102,7 +113,8 @@ if st.session_state["analyzed"] and st.session_state["results"]:
             "4점",
             "5점 (매우 신뢰함)"
         ],
-        index=None
+        index=None,
+        key="trust_score"
     )
 
     # ✅ 결과 저장하기 버튼
@@ -135,6 +147,9 @@ if st.session_state["analyzed"] and st.session_state["results"]:
 
             st.success("✅ 결과가 Dropbox에 무기한 저장되었습니다!")
 
-            # ✅ 상태 초기화 → 새로고침 없이 초기화
+            # ✅ 상태 완전 초기화 → 새로고침 없이 빈 화면
             st.session_state["analyzed"] = False
             st.session_state["results"] = None
+            st.session_state["gender"] = None
+            st.session_state["text"] = ""
+            st.session_state["trust_score"] = None
