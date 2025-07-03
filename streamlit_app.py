@@ -33,8 +33,8 @@ def analyze_emotion(text):
 
 # ✅ Streamlit UI
 st.set_page_config(page_title="KoTE 감정 탐지기", page_icon="🧐")
-st.title("🧐 KoTE 감정 탐지기 (무기한 Dropbox 저장)")
-st.write("문장을 입력하면 KoTE 모델로 감정 분석 후 Dropbox에 무기한 저장됩니다.")
+st.title("🧐 온라인 댓글 및 게시글 감정 탐지기")
+st.write("문장을 입력하면 감정 분석 후 결과를 제공합니다.")
 
 # ✅ 사용자 입력
 text = st.text_area("문장을 입력하세요:")
@@ -83,6 +83,6 @@ if st.button("분석하기"):
                 output.seek(0)
                 dbx.files_upload(output.read(), DROPBOX_PATH, mode=dropbox.files.WriteMode.overwrite)
 
-            st.success("✅ Dropbox에 무기한 저장 완료!")
+            st.success("✅ 계속해서 검색가능!")
         else:
             st.info("분석 결과가 없습니다.")
