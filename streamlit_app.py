@@ -1,6 +1,6 @@
 # ============================================================
 # streamlit_app.py
-# KoTE 감정 탐지기 (Streamlit Cloud + Dropbox 무기한 저장)
+# KoTE 설문폼 UX 예시 (성별 체크 → 상대 성별 메시지 → 감정 탐지 → Dropbox 무기한 저장)
 # ============================================================
 
 import streamlit as st
@@ -20,10 +20,10 @@ pipe = pipeline(
     top_k=None
 )
 
-# ✅ Dropbox Access Token (안전하게 Secrets로 불러옴)
+# ✅ Dropbox Access Token (Secrets에서 안전하게 가져오기!)
 DROPBOX_TOKEN = st.secrets["DROPBOX_TOKEN"]
 dbx = dropbox.Dropbox(DROPBOX_TOKEN)
-DROPBOX_PATH = "/sentiment_logs.xlsx"
+DROPBOX_PATH = "/gender_conflict_sentiment.xlsx"
 
 # ✅ 감정 분석 함수
 def analyze_emotion(text):
@@ -32,21 +32,37 @@ def analyze_emotion(text):
     return sorted(results, key=lambda x: x[1], reverse=True)
 
 # ✅ Streamlit UI
-st.set_page_config(page_title="KoTE 감정 탐지기", page_icon="🧐")
-st.title("🧐 온라인 댓글 및 게시글 감정 탐지기")
-st.write("문장을 입력하면 감정 분석 후 결과를 제공합니다.")
+st.set_page_config(page_title="KoTE 젠더 감정 설문", page_icon="🧑‍🤝‍🧑")
+st.title("🧑‍🤝‍🧑 20–30대 젠더 상호집단 감정 설문")
+st.write("아래에서 성별을 선택하고, 상대 성별에 대한 솔직한 메시지를 작성해주세요.")
 
-# ✅ 사용자 입력
-text = st.text_area("문장을 입력하세요:")
+# ✅ 1️⃣ 성별 선택
+gender = st.radio(
+    "당신의 성별은?",
+    ["여성", "남성"],
+    horizontal=True
+)
 
-if st.button("분석하기"):
+# ✅ 2️⃣ 대상 설명 안내
+if gender == "여성":
+    target_group = "20–30대 남성"
+else:
+    target_group = "20–30대 여성"
+
+st.info(f"✍️ {target_group}에 대해 솔직하게 느끼는 점을 자유롭게 작성해주세요.")
+
+# ✅ 3️⃣ 메시지 입력창
+text = st.text_area(f"{target_group}에 대한 솔직한 메시지")
+
+# ✅ 4️⃣ 버튼
+if st.button("감정 분석 & 저장하기"):
     if not text.strip():
-        st.warning("문장을 입력해주세요!")
+        st.warning("메시지를 작성해주세요!")
     else:
         results = analyze_emotion(text)
 
         if results:
-            # ✅ 시각화 (plotly)
+            # ✅ 시각화
             labels, scores = zip(*results)
             fig = px.bar(
                 x=scores, y=labels,
@@ -57,15 +73,16 @@ if st.button("분석하기"):
             fig.update_layout(xaxis_range=[0,1])
             st.plotly_chart(fig, use_container_width=True)
 
-            # ✅ 전체 감정 점수 표
             st.subheader("📄 전체 감정 점수")
             st.table(results)
 
-            # ✅ Dropbox 저장: 기존 파일 다운로드 → merge → overwrite
+            # ✅ Dropbox에 저장 (성별 + 대상 + 메시지 + 감정 결과)
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             df_new = pd.DataFrame([{
                 "timestamp": now,
-                "input_text": text,
+                "respondent_gender": gender,
+                "target_group": target_group,
+                "message": text,
                 "top_emotions": ", ".join([f"{label}({score})" for label, score in results])
             }])
 
@@ -75,7 +92,7 @@ if st.button("분석하기"):
                     df_existing = pd.read_excel(f)
                 df = pd.concat([df_existing, df_new], ignore_index=True)
             except dropbox.exceptions.ApiError:
-                # 첫 실행이라 파일 없으면 새로 생성
+                # 파일이 없으면 새로 생성
                 df = df_new
 
             with io.BytesIO() as output:
@@ -83,6 +100,6 @@ if st.button("분석하기"):
                 output.seek(0)
                 dbx.files_upload(output.read(), DROPBOX_PATH, mode=dropbox.files.WriteMode.overwrite)
 
-            st.success("✅ 계속해서 검색가능!")
+            st.success("✅ 감정 분석 완료! 데이터가 안전하게 Dropbox에 저장되었습니다.")
         else:
             st.info("분석 결과가 없습니다.")
