@@ -146,6 +146,8 @@ if st.session_state["analyzed"] and st.session_state["results"]:
                 dbx.files_upload(output.read(), DROPBOX_PATH, mode=dropbox.files.WriteMode.overwrite)
 
             st.success("✅ 결과가 Dropbox에 무기한 저장되었습니다!")
+            
+            st.session_state.clear()
 
             # ✅ 상태 완전 초기화 → 새로고침 없이 빈 화면
             st.session_state["analyzed"] = False
