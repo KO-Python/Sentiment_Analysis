@@ -15,11 +15,16 @@ pipe = pipeline(
     top_k=None
 )
 
-# ✅ Dropbox API 세팅
-DROPBOX_TOKEN = st.secrets["DROPBOX_TOKEN"]
-dbx = dropbox.Dropbox(DROPBOX_TOKEN)
+# ✅ Dropbox API 세팅 (자동 갱신 구조!)
+dbx = dropbox.Dropbox(
+    oauth2_access_token=st.secrets["dropbox"]["ACCESS_TOKEN"],
+    oauth2_refresh_token=st.secrets["dropbox"]["REFRESH_TOKEN"],
+    app_key=st.secrets["dropbox"]["APP_KEY"],
+    app_secret=st.secrets["dropbox"]["APP_SECRET"]
+)
 DROPBOX_PATH = "/gender_conflict_sentiment.xlsx"
 
+# ✅ 감정 분석 함수
 def analyze_emotion(text):
     outputs = pipe(text)[0]
     results = [(o["label"], round(o["score"], 3)) for o in outputs if o["score"] > 0.3]
