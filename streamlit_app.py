@@ -1,8 +1,3 @@
-# ============================================================
-# streamlit_app.py
-# KoTE 성별 간 감정 설문 UX (연령 입력 포함)
-# ============================================================
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -40,12 +35,10 @@ if "analyzed" not in st.session_state:
 if "results" not in st.session_state:
     st.session_state["results"] = None
 
-# ✅ 1️⃣ 연령 입력 (key)
-age = st.number_input(
+# ✅ 1️⃣ 연령 입력 (key) - 수정!
+age = st.text_input(
     "당신의 연령은?",
-    min_value=10,
-    max_value=100,
-    step=1,
+    placeholder="숫자로 입력해주세요",
     key="age"
 )
 
@@ -73,8 +66,10 @@ text = st.text_area(
 
 # ✅ 감정 분석 버튼
 if st.button("감정 분석하기"):
-    if age is None or age == 0:
+    if not age.strip():
         st.warning("연령을 입력해주세요!")
+    elif not age.strip().isdigit():
+        st.warning("연령은 숫자로만 입력해주세요!")
     elif not gender:
         st.warning("성별을 선택해주세요!")
     elif not text.strip():
@@ -123,11 +118,15 @@ if st.session_state["analyzed"] and st.session_state["results"]:
     if st.button("결과 저장하기"):
         if not trust_score:
             st.warning("감정 분석 신뢰도를 선택해주세요!")
+        elif not age.strip().isdigit():
+            st.warning("연령은 숫자로 입력해주세요!")
         else:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            age_value = int(age.strip())
+
             df_new = pd.DataFrame([{
                 "timestamp": now,
-                "respondent_age": age,
+                "respondent_age": age_value,
                 "respondent_gender": gender,
                 "target_group": target_group,
                 "message": text,
