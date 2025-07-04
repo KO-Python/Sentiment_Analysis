@@ -27,7 +27,18 @@ def analyze_emotion(text):
 
 st.set_page_config(page_title="KoTE 젠더 감정 설문", page_icon="🧑‍🤝‍🧑")
 st.title("🧑‍🤝‍🧑 20–30대 성별 간 감정 조사")
-st.write("연령과 성별을 입력하고, 평소 귀하께서 생각했던 상대 성별에 대한 솔직한 메시지를 작성해주세요.")
+
+# ✅ 지시문: 목적+방법
+st.write('''
+이 조사는 상대 성별(남성/여성)에 대한 귀하의 생각과 경험을 바탕으로 **감정을 분석하기 위해** 진행됩니다.  
+작성하신 내용은 연구 목적으로만 사용되며, 귀하의 익명성은 철저히 보장됩니다.
+
+상대 성별에 대해 평소에 생각했던 점, 좋았던 점, 아쉬웠던 점 등을 자유롭게 적어주세요.  
+**긍정적인 생각과 부정적인 생각 모두 환영합니다!**
+
+* 작성하신 내용을 바탕으로 귀하의 감정을 자동으로 분석해 드립니다.  
+✅ 최소 3~5줄 이상 솔직하게 작성해주시면 큰 도움이 됩니다.
+''')
 
 # ✅ 상태 변수 초기화
 if "analyzed" not in st.session_state:
@@ -35,14 +46,14 @@ if "analyzed" not in st.session_state:
 if "results" not in st.session_state:
     st.session_state["results"] = None
 
-# ✅ 1️⃣ 연령 입력 (key) - 수정!
+# ✅ 연령 입력
 age = st.text_input(
     "당신의 연령은?",
-    placeholder="숫자로 입력해주세요",
+    placeholder="예: 25",
     key="age"
 )
 
-# ✅ 2️⃣ 성별 선택 (빈칸 시작, key)
+# ✅ 성별 선택
 gender = st.radio(
     "당신의 성별은?",
     ["여성", "남성"],
@@ -54,14 +65,15 @@ gender = st.radio(
 # ✅ 대상 설명
 if gender:
     target_group = "20–30대 남성" if gender == "여성" else "20–30대 여성"
-    st.info(f"✍️ {target_group}에 대해 솔직하게 느끼는 점을 작성해주세요.")
+    st.info(f"✍️ {target_group}에 대해 솔직하게 작성해주세요.")
 else:
     target_group = None
 
-# ✅ 3️⃣ 메시지 입력창 (key)
+# ✅ 메시지 입력
 text = st.text_area(
-    "솔직한 메시지:" if target_group else "먼저 성별을 선택해주세요!",
-    key="text"
+    "상대 성별에 대한 메시지:" if target_group else "먼저 성별을 선택해주세요!",
+    key="text",
+    height=250
 )
 
 # ✅ 감정 분석 버튼
@@ -74,13 +86,15 @@ if st.button("감정 분석하기"):
         st.warning("성별을 선택해주세요!")
     elif not text.strip():
         st.warning("메시지를 작성해주세요!")
+    elif len(text.strip()) < 10:
+        st.warning("최소 10자 이상 작성해주세요!")
     else:
         results = analyze_emotion(text)
         if results:
             st.session_state["analyzed"] = True
             st.session_state["results"] = results
         else:
-            st.info("분석 결과가 없습니다.")
+            st.info("분석 결과가 없습니다. 다른 내용을 시도해주세요.")
 
 # ✅ 분석 결과 표시
 if st.session_state["analyzed"] and st.session_state["results"]:
@@ -99,10 +113,10 @@ if st.session_state["analyzed"] and st.session_state["results"]:
     st.subheader("📄 전체 감정 점수")
     st.table(results)
 
-    # ✅ 신뢰도 질문 (key)
-    st.subheader("🔍 이 감정 분석 결과가 얼마나 신뢰할 만한지 평가해주세요.")
+    # ✅ 신뢰도 질문
+    st.subheader("🔍 감정 분석 결과 신뢰도 평가")
     trust_score = st.radio(
-        "5점 척도로 선택해주세요:",
+        "이 감정 분석 결과를 얼마나 신뢰하시나요? (5점 척도)",
         [
             "1점 (전혀 신뢰하지 않음)",
             "2점",
@@ -114,7 +128,7 @@ if st.session_state["analyzed"] and st.session_state["results"]:
         key="trust_score"
     )
 
-    # ✅ 결과 저장하기 버튼
+    # ✅ 결과 저장 버튼
     if st.button("결과 저장하기"):
         if not trust_score:
             st.warning("감정 분석 신뢰도를 선택해주세요!")
@@ -147,7 +161,5 @@ if st.session_state["analyzed"] and st.session_state["results"]:
                 output.seek(0)
                 dbx.files_upload(output.read(), DROPBOX_PATH, mode=dropbox.files.WriteMode.overwrite)
 
-            st.success("✅ '새로 고침' 후 추가 검색 가능합니다.")
-
-            # ✅ 저장 후 전체 상태 초기화!
+            st.success("✅ 결과가 성공적으로 저장되었습니다. 새로 고침 후 추가 참여가 가능합니다.")
             st.session_state.clear()
