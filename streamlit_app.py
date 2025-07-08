@@ -78,18 +78,16 @@ if st.session_state["page"] == "intro":
 # ✅ 6) 설문 페이지
 # ============================================
 elif st.session_state["page"] == "survey":
-    # ✅ 상태 값 안전 가져오기
     age = st.session_state.get("age", "")
     gender = st.session_state.get("gender", "")
 
-    # ✅ 상태 값 보호: 없으면 intro로 되돌리기
     if not gender or not age:
         st.session_state["page"] = "intro"
         st.rerun()
 
-    # ✅ 숨김 위젯으로 상태 유지
-    st.text_input("hidden_age", value=age, key="hidden_age", disabled=True, label_visibility="collapsed")
-    st.text_input("hidden_gender", value=gender, key="hidden_gender", disabled=True, label_visibility="collapsed")
+    # ✅ 동일 key로 유지하면서 숨김 유지 (disabled)
+    st.text_input("당신의 연령", value=age, key="age", disabled=True)
+    st.radio("당신의 성별", ["여성", "남성"], index=["여성", "남성"].index(gender), key="gender", disabled=True)
 
     st.subheader("✍️ 설문에 응답해주세요")
 
@@ -101,7 +99,6 @@ elif st.session_state["page"] == "survey":
     귀하께서 속한 [20–30대 {user_gender}]에 대해 평소에 생각했던 점, 좋았던 점, 아쉬웠던 점, 느낀 점 등을 자유롭게 3–5줄 이상 적어주세요.
     ''')
 
-    # ✅ 고유 key 사용!
     own_group_text = st.text_area(
         f"{user_gender} 집단에 대한 생각",
         key="own_group_text",
