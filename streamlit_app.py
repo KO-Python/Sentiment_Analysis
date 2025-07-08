@@ -222,5 +222,5 @@ elif st.session_state["page"] == "result":
                 output.seek(0)
                 dbx.files_upload(output.read(), DROPBOX_PATH, mode=dropbox.files.WriteMode.overwrite)
 
-            st.success("✅ 결과가 성공적으로 Dropbox에 저장되었습니다. 새로고침 후 추가 참여가 가능합니다.")
+            st.success("✅ 새로고침 후 추가 참여가 가능합니다.")
             st.session_state.clear()
