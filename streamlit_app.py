@@ -78,14 +78,22 @@ if st.session_state["page"] == "intro":
 # ✅ 6) 설문 페이지
 # ============================================
 elif st.session_state["page"] == "survey":
+    # ✅ 상태 값 안전 가져오기
+    age = st.session_state.get("age", "")
+    gender = st.session_state.get("gender", "")
+
     # ✅ 상태 값 보호: 없으면 intro로 되돌리기
-    if "gender" not in st.session_state or "age" not in st.session_state:
+    if not gender or not age:
         st.session_state["page"] = "intro"
         st.rerun()
 
+    # ✅ 숨김 위젯으로 상태 유지
+    st.text_input("hidden_age", value=age, key="hidden_age", disabled=True, label_visibility="collapsed")
+    st.text_input("hidden_gender", value=gender, key="hidden_gender", disabled=True, label_visibility="collapsed")
+
     st.subheader("✍️ 설문에 응답해주세요")
 
-    user_gender = st.session_state["gender"]
+    user_gender = gender
     opposite_gender = "남성" if user_gender == "여성" else "여성"
 
     st.write(f'''
@@ -124,7 +132,6 @@ elif st.session_state["page"] == "survey":
 # ✅ 7) 결과 페이지
 # ============================================
 elif st.session_state["page"] == "result":
-    # ✅ 상태 값 보호: 분석결과 없으면 intro로 되돌리기
     if "own_results" not in st.session_state or "other_results" not in st.session_state:
         st.session_state["page"] = "intro"
         st.rerun()
@@ -141,7 +148,6 @@ elif st.session_state["page"] == "result":
     귀하께서 제출해주신 내용의 분석 결과는 아래와 같습니다.
     ''')
 
-    # ✅ KOTE 결과 시각화 (점수 높은 순)
     df_own = pd.DataFrame(st.session_state["own_results"], columns=["label", "score"]).sort_values(by="score", ascending=False)
     df_other = pd.DataFrame(st.session_state["other_results"], columns=["label", "score"]).sort_values(by="score", ascending=False)
 
@@ -169,7 +175,6 @@ elif st.session_state["page"] == "result":
     st.plotly_chart(fig2)
     st.table(df_other)
 
-    # ✅ 신뢰도
     st.subheader("🔍 감정 분석 결과 신뢰도 평가")
     trust_score = st.radio(
         "감정 분석 결과를 얼마나 신뢰하시나요? (1점 = 전혀 신뢰하지 않음, 5점 = 매우 신뢰함)",
@@ -178,7 +183,6 @@ elif st.session_state["page"] == "result":
         key="trust_score"
     )
 
-    # ✅ Dropbox 저장
     if st.button("결과 저장하기"):
         if not trust_score:
             st.warning("⚠️ 신뢰도를 선택해주세요!")
