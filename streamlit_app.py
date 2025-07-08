@@ -15,7 +15,7 @@ pipe = pipeline(
     tokenizer="searle-j/kote_for_easygoing_people",
     function_to_apply="sigmoid",
     top_k=None,
-    device=-1   # ✅ CPU 강제 지정
+    device=-1  # ✅ CPU 전용
 )
 
 # ============================================
@@ -60,15 +60,15 @@ if st.session_state["page"] == "intro":
     ''')
 
     st.subheader("📌 기본 정보 입력")
-    age = st.text_input("당신의 연령은?", placeholder="예: 25", key="age")
-    gender = st.radio("당신의 성별은?", ["여성", "남성"], index=None, horizontal=True, key="gender")
+    st.text_input("당신의 연령은?", placeholder="예: 25", key="age")
+    st.radio("당신의 성별은?", ["여성", "남성"], index=None, horizontal=True, key="gender")
 
     if st.button("다음 창으로"):
-        if not age.strip():
+        if not st.session_state["age"].strip():
             st.warning("⚠️ 연령을 입력해주세요!")
-        elif not age.strip().isdigit():
+        elif not st.session_state["age"].strip().isdigit():
             st.warning("⚠️ 연령은 숫자로만 입력해주세요!")
-        elif not gender:
+        elif not st.session_state["gender"]:
             st.warning("⚠️ 성별을 선택해주세요!")
         else:
             st.session_state["page"] = "survey"
@@ -93,6 +93,7 @@ elif st.session_state["page"] == "survey":
     귀하께서 속한 [20–30대 {user_gender}]에 대해 평소에 생각했던 점, 좋았던 점, 아쉬웠던 점, 느낀 점 등을 자유롭게 3–5줄 이상 적어주세요.
     ''')
 
+    # ✅ 고유 key 사용!
     own_group_text = st.text_area(
         f"{user_gender} 집단에 대한 생각",
         key="own_group_text",
