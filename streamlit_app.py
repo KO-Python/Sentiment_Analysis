@@ -71,7 +71,7 @@ if st.session_state["page"] == "intro":
             st.warning("⚠️ 성별을 선택해주세요!")
         else:
             st.session_state["page"] = "survey"
-            st.experimental_rerun()
+            st.rerun()  # ✅ 최신 버전!
 
 # ============================================
 # ✅ 6) 설문 페이지
@@ -111,7 +111,7 @@ elif st.session_state["page"] == "survey":
             st.session_state["other_results"] = analyze_emotion(other_group_text)
             st.session_state["page"] = "result"
             st.session_state["analyzed"] = True
-            st.experimental_rerun()
+            st.rerun()  # ✅ 최신 버전!
 
 # ============================================
 # ✅ 7) 결과 페이지
