@@ -7,14 +7,15 @@ import io
 from datetime import datetime
 
 # ============================================
-# ✅ 1) KoTE 감정 탐지 파이프라인
+# ✅ 1) KoTE 감정 탐지 파이프라인 (CPU 강제)
 # ============================================
 pipe = pipeline(
     "text-classification",
     model="searle-j/kote_for_easygoing_people",
     tokenizer="searle-j/kote_for_easygoing_people",
     function_to_apply="sigmoid",
-    top_k=None
+    top_k=None,
+    device=-1   # ✅ CPU 강제 지정
 )
 
 # ============================================
