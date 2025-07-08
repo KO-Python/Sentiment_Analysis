@@ -129,9 +129,16 @@ elif st.session_state["page"] == "survey":
 # ✅ 7) 결과 페이지
 # ============================================
 elif st.session_state["page"] == "result":
-    if "own_results" not in st.session_state or "other_results" not in st.session_state:
+    age = st.session_state.get("age", "")
+    gender = st.session_state.get("gender", "")
+
+    if "own_results" not in st.session_state or "other_results" not in st.session_state or not age or not gender:
         st.session_state["page"] = "intro"
         st.rerun()
+
+    # ✅ 동일 key로 유지하며 숨김 유지
+    st.text_input("당신의 연령", value=age, key="age", disabled=True)
+    st.radio("당신의 성별", ["여성", "남성"], index=["여성", "남성"].index(gender), key="gender", disabled=True)
 
     st.subheader("🎉 연구에 참여해주셔서 감사합니다!")
 
@@ -148,7 +155,7 @@ elif st.session_state["page"] == "result":
     df_own = pd.DataFrame(st.session_state["own_results"], columns=["label", "score"]).sort_values(by="score", ascending=False)
     df_other = pd.DataFrame(st.session_state["other_results"], columns=["label", "score"]).sort_values(by="score", ascending=False)
 
-    st.write(f"### ✅ 귀하의 집단({st.session_state['gender']})에 대한 감정 분석 결과")
+    st.write(f"### ✅ 귀하의 집단({gender})에 대한 감정 분석 결과")
     fig1 = px.bar(
         df_own,
         x="score",
@@ -160,7 +167,7 @@ elif st.session_state["page"] == "result":
     st.plotly_chart(fig1)
     st.table(df_own)
 
-    st.write(f"### ✅ 상대 집단({ '남성' if st.session_state['gender']=='여성' else '여성' })에 대한 감정 분석 결과")
+    st.write(f"### ✅ 상대 집단({ '남성' if gender=='여성' else '여성' })에 대한 감정 분석 결과")
     fig2 = px.bar(
         df_other,
         x="score",
@@ -185,12 +192,12 @@ elif st.session_state["page"] == "result":
             st.warning("⚠️ 신뢰도를 선택해주세요!")
         else:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            age_value = int(st.session_state["age"].strip())
+            age_value = int(age.strip())
 
             df_new = pd.DataFrame([{
                 "timestamp": now,
                 "respondent_age": age_value,
-                "respondent_gender": st.session_state["gender"],
+                "respondent_gender": gender,
                 "own_group_text": st.session_state["own_group_text"],
                 "own_results": ", ".join([f"{label}({score})" for label, score in st.session_state["own_results"]]),
                 "other_group_text": st.session_state["other_group_text"],
