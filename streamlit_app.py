@@ -71,12 +71,17 @@ if st.session_state["page"] == "intro":
             st.warning("⚠️ 성별을 선택해주세요!")
         else:
             st.session_state["page"] = "survey"
-            st.rerun()  # ✅ 최신 버전!
+            st.rerun()
 
 # ============================================
 # ✅ 6) 설문 페이지
 # ============================================
 elif st.session_state["page"] == "survey":
+    # ✅ 상태 값 보호: 없으면 intro로 되돌리기
+    if "gender" not in st.session_state or "age" not in st.session_state:
+        st.session_state["page"] = "intro"
+        st.rerun()
+
     st.subheader("✍️ 설문에 응답해주세요")
 
     user_gender = st.session_state["gender"]
@@ -85,7 +90,7 @@ elif st.session_state["page"] == "survey":
     st.write(f'''
     다음은 귀하의 일상 속 경험에서 사람들과의 관계에서 느낀 생각이나 감정에 대해 묻는 질문입니다.  
     귀하께서 속한 [20–30대 {user_gender}]에 대해 평소에 생각했던 점, 좋았던 점, 아쉬웠던 점, 느낀 점 등을 자유롭게 3–5줄 이상 적어주세요.
-   ''')
+    ''')
 
     own_group_text = st.text_area(
         f"{user_gender} 집단에 대한 생각",
@@ -111,12 +116,17 @@ elif st.session_state["page"] == "survey":
             st.session_state["other_results"] = analyze_emotion(other_group_text)
             st.session_state["page"] = "result"
             st.session_state["analyzed"] = True
-            st.rerun()  # ✅ 최신 버전!
+            st.rerun()
 
 # ============================================
 # ✅ 7) 결과 페이지
 # ============================================
 elif st.session_state["page"] == "result":
+    # ✅ 상태 값 보호: 분석결과 없으면 intro로 되돌리기
+    if "own_results" not in st.session_state or "other_results" not in st.session_state:
+        st.session_state["page"] = "intro"
+        st.rerun()
+
     st.subheader("🎉 연구에 참여해주셔서 감사합니다!")
 
     st.write('''
