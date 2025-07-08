@@ -15,7 +15,7 @@ pipe = pipeline(
     tokenizer="searle-j/kote_for_easygoing_people",
     function_to_apply="sigmoid",
     top_k=None,
-    device=-1  # ✅ CPU 전용
+    device=-1  # ✅ CPU-only 환경
 )
 
 # ============================================
@@ -85,7 +85,7 @@ elif st.session_state["page"] == "survey":
         st.session_state["page"] = "intro"
         st.rerun()
 
-    # ✅ 동일 key로 유지하면서 숨김 유지 (disabled)
+    # ✅ 동일 key 유지 (숨김)
     st.text_input("당신의 연령", value=age, key="age", disabled=True)
     st.radio("당신의 성별", ["여성", "남성"], index=["여성", "남성"].index(gender), key="gender", disabled=True)
 
@@ -131,14 +131,18 @@ elif st.session_state["page"] == "survey":
 elif st.session_state["page"] == "result":
     age = st.session_state.get("age", "")
     gender = st.session_state.get("gender", "")
+    own_group_text = st.session_state.get("own_group_text", "")
+    other_group_text = st.session_state.get("other_group_text", "")
 
-    if "own_results" not in st.session_state or "other_results" not in st.session_state or not age or not gender:
+    if not age or not gender or not own_group_text or not other_group_text:
         st.session_state["page"] = "intro"
         st.rerun()
 
-    # ✅ 동일 key로 유지하며 숨김 유지
+    # ✅ 숨김 위젯으로 상태 유지
     st.text_input("당신의 연령", value=age, key="age", disabled=True)
     st.radio("당신의 성별", ["여성", "남성"], index=["여성", "남성"].index(gender), key="gender", disabled=True)
+    st.text_area("귀하의 생각(자기 집단)", value=own_group_text, key="own_group_text", height=100, disabled=True)
+    st.text_area("귀하의 생각(상대 집단)", value=other_group_text, key="other_group_text", height=100, disabled=True)
 
     st.subheader("🎉 연구에 참여해주셔서 감사합니다!")
 
@@ -198,9 +202,9 @@ elif st.session_state["page"] == "result":
                 "timestamp": now,
                 "respondent_age": age_value,
                 "respondent_gender": gender,
-                "own_group_text": st.session_state["own_group_text"],
+                "own_group_text": own_group_text,
                 "own_results": ", ".join([f"{label}({score})" for label, score in st.session_state["own_results"]]),
-                "other_group_text": st.session_state["other_group_text"],
+                "other_group_text": other_group_text,
                 "other_results": ", ".join([f"{label}({score})" for label, score in st.session_state["other_results"]]),
                 "trust_score": trust_score
             }])
